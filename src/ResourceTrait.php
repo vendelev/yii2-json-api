@@ -44,7 +44,7 @@ trait ResourceTrait
     {
         $attributes = [];
 
-        foreach (self::resolveFields($this->fields(), $fields) as $name => $definition) {
+        foreach ($this->resolveFields($this->fields(), $fields) as $name => $definition) {
             $attributes[$name] = is_string($definition) ? $this->$definition : call_user_func($definition, $this, $name);
         }
         return $attributes;
@@ -57,7 +57,7 @@ trait ResourceTrait
     {
         $relationships = [];
 
-        foreach (self::resolveFields($this->extraFields()) as $name => $definition) {
+        foreach ($this->resolveFields($this->extraFields()) as $name => $definition) {
             if (is_string($definition)) {
                 $relation = $this->$definition;
                 if (!is_array($relation)) {
@@ -122,7 +122,7 @@ trait ResourceTrait
      * @param array $fieldSet
      * @return array
      */
-    protected static function resolveFields(array $fields, array $fieldSet = [])
+    protected function resolveFields(array $fields, array $fieldSet = [])
     {
         $result = [];
 
