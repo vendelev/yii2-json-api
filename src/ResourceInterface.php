@@ -8,9 +8,9 @@ namespace tuyakhov\jsonapi;
 
 interface ResourceInterface extends ResourceIdentifierInterface
 {
-    public function getAttributes(array $fields = []);
+    public function getResourceAttributes(array $fields = []);
 
-    public function getRelationships();
+    public function getResourceRelationships();
 
     public function getLinks();
 

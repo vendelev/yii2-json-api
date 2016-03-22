@@ -1,8 +1,6 @@
 <?php
 /**
- * @link http://www.stombox.com/
- * @copyright Copyright (c) 2015 Stombox LLC
- * @license http://www.stombox.com/license/
+ * @author Anton Tuyakhov <atuyakhov@gmail.com>
  */
 
 namespace tuyakhov\jsonapi;
@@ -40,7 +38,7 @@ trait ResourceTrait
      * @param array $fields
      * @return array
      */
-    public function getAttributes(array $fields = [])
+    public function getResourceAttributes(array $fields = [])
     {
         $attributes = [];
 
@@ -53,7 +51,7 @@ trait ResourceTrait
     /**
      * @return array
      */
-    public function getRelationships()
+    public function getResourceRelationships()
     {
         $relationships = [];
 
@@ -86,8 +84,8 @@ trait ResourceTrait
             'id' => $this->getId(),
             'type' => $this->getType(),
         ];
-        $attributes = $this->getAttributes($fields);
-        $relationships = $this->getRelationships();
+        $attributes = $this->getResourceAttributes($fields);
+        $relationships = $this->getResourceRelationships();
         if (!empty($attributes)) {
             $data['attributes'] = $attributes;
         }
