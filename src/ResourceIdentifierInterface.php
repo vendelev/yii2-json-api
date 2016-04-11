@@ -5,7 +5,6 @@
 
 namespace tuyakhov\jsonapi;
 
-
 interface ResourceIdentifierInterface
 {
     public function getId();

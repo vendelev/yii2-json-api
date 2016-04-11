@@ -79,5 +79,4 @@ class Serializer extends \yii\rest\Serializer
             $relationships
         ];
     }
-
 }

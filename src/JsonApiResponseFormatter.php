@@ -56,5 +56,4 @@ class JsonApiResponseFormatter extends Component implements ResponseFormatterInt
             $response->content = Json::encode($apiDocument, $options);
         }
     }
-
 }

@@ -14,5 +14,4 @@ class JsonApiParser extends JsonParser
         // TODO probably need to validate 'type' property.
         return parent::parse($rawBody, $contentType);
     }
-
 }

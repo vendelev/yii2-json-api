@@ -5,7 +5,6 @@
 
 namespace tuyakhov\jsonapi;
 
-
 interface ResourceInterface extends ResourceIdentifierInterface
 {
     public function getResourceAttributes(array $fields = []);

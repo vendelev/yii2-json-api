@@ -5,7 +5,6 @@
 
 namespace tuyakhov\jsonapi;
 
-
 use yii\base\Arrayable;
 use yii\db\ActiveRecordInterface;
 use yii\helpers\ArrayHelper;
@@ -61,7 +60,7 @@ trait ResourceTrait
                 if (!is_array($relation)) {
                     $relation = [$relation];
                 }
-                foreach($relation as $item) {
+                foreach ($relation as $item) {
                     if ($item instanceof ResourceIdentifierInterface) {
                         $relationships[$name]['data'] = ['id' => $item->getId(), 'type' => $item->getType()];
                     }
