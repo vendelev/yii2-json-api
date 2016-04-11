@@ -1,6 +1,9 @@
 
 Implementation of JSON API specification for the Yii framework
 ==================================================================
+[![Latest Stable Version](https://poser.pugx.org/tuyakhov/yii2-json-api/v/stable.png)](https://packagist.org/packages/tuyakhov/yii2-json-api)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/tuyakhov/yii2-json-api/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/tuyakhov/yii2-json-api/?branch=master) [![Build Status](https://scrutinizer-ci.com/g/tuyakhov/yii2-json-api/badges/build.png?b=master)](https://scrutinizer-ci.com/g/tuyakhov/yii2-json-api/build-status/master)
+[![Total Downloads](https://poser.pugx.org/tuyakhov/yii2-json-api/downloads.png)](https://packagist.org/packages/tuyakhov/yii2-json-api)
 Installation
 ------------
 
