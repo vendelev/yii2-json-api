@@ -11,6 +11,8 @@ interface ResourceInterface extends ResourceIdentifierInterface
 
     public function getResourceRelationships();
 
+    public function setResourceRelationship($name, $relationship);
+
     public function getLinks();
 
     public function getMeta();

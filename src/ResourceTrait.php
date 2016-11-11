@@ -7,6 +7,7 @@ namespace tuyakhov\jsonapi;
 
 use yii\base\Arrayable;
 use yii\db\ActiveRecordInterface;
+use yii\db\BaseActiveRecord;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
 
@@ -69,6 +70,24 @@ trait ResourceTrait
             }
         }
         return $relationships;
+    }
+
+    /**
+     * @param string $name the case sensitive name of the relationship.
+     * @param $relationship
+     */
+    public function setResourceRelationships($name, $relationship)
+    {
+        /** @var $this BaseActiveRecord */
+        $this->unlinkAll($name);
+        if (!is_array($relationship)) {
+            $relationship = [$relationship];
+        }
+        foreach ($relationship as $key => $value) {
+            if ($value instanceof ActiveRecordInterface) {
+                $this->link($name, $value);
+            }
+        }
     }
 
     /**

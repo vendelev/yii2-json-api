@@ -12,13 +12,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist tuyakhov/yii2-json-api "dev-master"
+php composer.phar require --prefer-dist tuyakhov/yii2-json-api "*"
 ```
 
 or add
 
 ```
-"tuyakhov/yii2-json-api": "dev-master"
+"tuyakhov/yii2-json-api": "*"
 ```
 
 to the require section of your `composer.json` file.
@@ -52,8 +52,9 @@ class Controller extends \yii\rest\Controller
 Model:
 ```php
 use tuyakhov\jsonapi\ResourceTrait;
+use tuyakhov\jsonapi\ResourceInterface;
 
-class User extends ActiveRecord
+class User extends ActiveRecord implements ResourceInterface
 {
     use ResourceTrait;
 }
