@@ -5,23 +5,35 @@
 
 namespace tuyakhov\jsonapi\tests\data;
 
-use tuyakhov\jsonapi\ResourceIdentifierInterface;
+use tuyakhov\jsonapi\ResourceInterface;
 use tuyakhov\jsonapi\ResourceTrait;
 use yii\base\Model;
 
-class ResourceModel extends Model implements ResourceIdentifierInterface
+class ResourceModel extends Model implements ResourceInterface
 {
     use ResourceTrait;
 
-    public $testAttribute = 'testAttribute';
+    public static $id = '123';
+    public static $fields = ['field1', 'field2'];
+    public static $extraFields = [];
+    public $field1 = 'test';
+    public $field2 = 2;
+    public $username = '';
+    public $extraField1 = 'testExtra';
+    public $extraField2 = 42;
 
-    public function getTestRelation()
+    public function getId()
     {
-        return new self;
+        return static::$id;
+    }
+
+    public function fields()
+    {
+        return static::$fields;
     }
 
     public function extraFields()
     {
-        return ['testRelation'];
+        return static::$extraFields;
     }
 }

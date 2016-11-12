@@ -62,11 +62,8 @@ trait ResourceTrait
                     $relation = [$relation];
                 }
                 foreach ($relation as $item) {
-                    if ($item instanceof ResourceIdentifierInterface) {
-                        $relationships[$name]['data'] = ['id' => $item->getId(), 'type' => $item->getType()];
-                    }
+                    $relationships[$name] = $item;
                 }
-                // TODO add links and meta. Should create interface
             }
         }
         return $relationships;
@@ -76,10 +73,8 @@ trait ResourceTrait
      * @param string $name the case sensitive name of the relationship.
      * @param $relationship
      */
-    public function setResourceRelationships($name, $relationship)
+    public function setResourceRelationship($name, $relationship)
     {
-        /** @var $this BaseActiveRecord */
-        $this->unlinkAll($name);
         if (!is_array($relationship)) {
             $relationship = [$relationship];
         }
@@ -88,32 +83,6 @@ trait ResourceTrait
                 $this->link($name, $value);
             }
         }
-    }
-
-    /**
-     * @param array $fields
-     * @param array $expand
-     * @param bool $recursive
-     * @return array
-     */
-    public function toArray(array $fields = [], array $expand = [], $recursive = true)
-    {
-        $data = [
-            'id' => $this->getId(),
-            'type' => $this->getType(),
-        ];
-        $attributes = $this->getResourceAttributes($fields);
-        $relationships = $this->getResourceRelationships();
-        if (!empty($attributes)) {
-            $data['attributes'] = $attributes;
-        }
-        if (!empty($relationships)) {
-            $data['relationships'] = $relationships;
-        }
-
-        // TODO add links and meta. Should create interface
-
-        return $recursive ? ArrayHelper::toArray($data) : $data;
     }
 
     /**

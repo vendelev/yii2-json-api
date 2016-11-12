@@ -39,19 +39,17 @@ class JsonApiResponseFormatter extends Component implements ResponseFormatterInt
             if ($this->prettyPrint) {
                 $options |= JSON_PRETTY_PRINT;
             }
-            $topMember = 'data';
-            $apiDocument = [];
+
             if ($response->isClientError || $response->isServerError) {
                 if (ArrayHelper::isAssociative($response->data)) {
                     $response->data = [$response->data];
                 }
-                $topMember = 'errors';
+                $apiDocument = ['errors' => $response->data];
+            } elseif (ArrayHelper::keyExists('data', $response->data)) {
+                $apiDocument = $response->data;
+            } else {
+                $apiDocument = ['meta' => $response->data];
             }
-            if ($meta = ArrayHelper::getValue($response->data, 'meta')) {
-                unset($response->data['meta']);
-                $apiDocument['meta'] = $meta;
-            }
-            $apiDocument[$topMember] = $response->data;
 
             $response->content = Json::encode($apiDocument, $options);
         }
