@@ -56,15 +56,7 @@ trait ResourceTrait
         $relationships = [];
 
         foreach ($this->resolveFields($this->extraFields()) as $name => $definition) {
-            if (is_string($definition)) {
-                $relation = $this->$definition;
-                if (!is_array($relation)) {
-                    $relation = [$relation];
-                }
-                foreach ($relation as $item) {
-                    $relationships[$name] = $item;
-                }
-            }
+            $relationships[$name] = is_string($definition) ? $this->$definition : call_user_func($definition, $this, $name);
         }
         return $relationships;
     }

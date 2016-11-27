@@ -26,7 +26,6 @@ to the require section of your `composer.json` file.
 
 Usage
 ==============================
-This implementation is not complete yet. Yii2 JSON Api extension is still under hard development process. [Content Negotiation](http://jsonapi.org/format/#content-negotiation) and [Document Structure](http://jsonapi.org/format/#document-structure) are only covered at the moment.<br/>
 Once the extension is installed, simply use it in your code by  :
 Data Serializing and Content Negotiation:
 -------------------------------------------
@@ -61,7 +60,7 @@ class User extends ActiveRecord implements ResourceInterface
 ```
 Enabling JSON Input
 ---------------------------
-To let the API accept input data in JSON format, configure the [[yii\web\Request::$parsers|parsers]] property of the request application component to use the [[tuyakhov\jsonapi\JsonParser]] for JSON input
+To let the API accept input data in JSON API format, configure the [[yii\web\Request::$parsers|parsers]] property of the request application component to use the [[tuyakhov\jsonapi\JsonApiParser]] for JSON input
 ```php
 'request' => [
   'parsers' => [

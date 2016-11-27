@@ -100,6 +100,7 @@ class Serializer extends Component
         $relationships = $model->getResourceRelationships();
         if (!empty($relationships)) {
             foreach ($relationships as $name => $items) {
+                $relationship = [];
                 if (is_array($items)) {
                     foreach ($items as $item) {
                         if ($item instanceof ResourceIdentifierInterface) {
