@@ -156,8 +156,13 @@ class Serializer extends Component
             if (!in_array($name, $included)) {
                 continue;
             }
-            if ($relationship instanceof ResourceInterface) {
-                $data[] = $this->serializeModel($relationship);
+            if (!is_array($relationship)) {
+                $relationship = [$relationship];
+            }
+            foreach ($relationship as $model) {
+                if ($model instanceof ResourceInterface) {
+                    $data[] = $this->serializeModel($model);
+                }
             }
         }
         return $data;
