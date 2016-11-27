@@ -111,7 +111,7 @@ class Serializer extends Component
                     $relationship = ['id' => $items->getId(), 'type' => $items->getType()];
                 }
                 if (!empty($relationship)) {
-                    $data['relationships'][$name] = $relationship;
+                    $data['relationships'][$name]['data'] = $relationship;
                 }
             }
         }

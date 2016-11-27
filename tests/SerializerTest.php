@@ -87,7 +87,7 @@ class SerializerTest extends TestCase
                 'field2' => 2,
             ],
             'relationships' => [
-                'extraField1' => ['id' => '123', 'type' => 'resource-models']
+                'extraField1' => ['data' => ['id' => '123', 'type' => 'resource-models']]
             ]
         ];
         $model = new ResourceModel();
