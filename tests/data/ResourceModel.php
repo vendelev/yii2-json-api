@@ -8,6 +8,7 @@ namespace tuyakhov\jsonapi\tests\data;
 use tuyakhov\jsonapi\ResourceInterface;
 use tuyakhov\jsonapi\ResourceTrait;
 use yii\base\Model;
+use yii\db\ActiveQuery;
 
 class ResourceModel extends Model implements ResourceInterface
 {
@@ -22,6 +23,8 @@ class ResourceModel extends Model implements ResourceInterface
     public $extraField1 = 'testExtra';
     public $extraField2 = 42;
 
+    private $_related = [];
+
     public function getId()
     {
         return static::$id;
@@ -35,5 +38,15 @@ class ResourceModel extends Model implements ResourceInterface
     public function extraFields()
     {
         return static::$extraFields;
+    }
+
+    public function getRelation($name)
+    {
+        return isset($this->_related[$name]) ? $this->_related[$name] : null;
+    }
+
+    public function setRelation($name, $value)
+    {
+        $this->_related[$name] = $value;
     }
 }
