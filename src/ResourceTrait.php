@@ -7,8 +7,6 @@ namespace tuyakhov\jsonapi;
 
 use yii\base\Arrayable;
 use yii\db\ActiveRecordInterface;
-use yii\db\BaseActiveRecord;
-use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
 
 trait ResourceTrait
@@ -41,8 +39,14 @@ trait ResourceTrait
     public function getResourceAttributes(array $fields = [])
     {
         $attributes = [];
+        if ($this instanceof Arrayable) {
+            $fieldDefinitions = $this->fields();
+        } else {
+            $vars = array_keys(\Yii::getObjectVars($this));
+            $fieldDefinitions = array_combine($vars, $vars);
+        }
 
-        foreach ($this->resolveFields($this->fields(), $fields) as $name => $definition) {
+        foreach ($this->resolveFields($fieldDefinitions, $fields) as $name => $definition) {
             $attributes[$name] = is_string($definition) ? $this->$definition : call_user_func($definition, $this, $name);
         }
         return $attributes;
@@ -54,8 +58,12 @@ trait ResourceTrait
     public function getResourceRelationships()
     {
         $relationships = [];
+        $fields = [];
+        if ($this instanceof Arrayable) {
+            $fields = $this->extraFields();
+        }
 
-        foreach ($this->resolveFields($this->extraFields()) as $name => $definition) {
+        foreach ($this->resolveFields($fields) as $name => $definition) {
             $relationships[$name] = is_string($definition) ? $this->$definition : call_user_func($definition, $this, $name);
         }
         return $relationships;
@@ -75,23 +83,6 @@ trait ResourceTrait
                 $this->link($name, $value);
             }
         }
-    }
-
-    /**
-     * @return array
-     */
-    public function fields()
-    {
-        $fields = array_keys(\Yii::getObjectVars($this));
-        return array_combine($fields, $fields);
-    }
-
-    /**
-     * @return array
-     */
-    public function extraFields()
-    {
-        return [];
     }
 
     /**

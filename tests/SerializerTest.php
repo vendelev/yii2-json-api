@@ -138,10 +138,16 @@ class SerializerTest extends TestCase
     {
         $bob = new ResourceModel();
         $bob->username = 'Bob';
-        $expectedBob = ['id' => '123', 'type' => 'resource-models', 'attributes' => ['username' => 'Bob']];
+        $bob->extraField1 = new ResourceModel();
+        $expectedBob = ['id' => '123', 'type' => 'resource-models', 
+            'attributes' => ['username' => 'Bob'], 
+            'relationships' => ['extraField1' => ['data' => ['id' => '123', 'type' => 'resource-models']]]];
         $tom = new ResourceModel();
         $tom->username = 'Tom';
-        $expectedTom = ['id' => '123', 'type' => 'resource-models', 'attributes' => ['username' => 'Tom']];
+        $tom->extraField1 = new ResourceModel();
+        $expectedTom = ['id' => '123', 'type' => 'resource-models', 
+            'attributes' => ['username' => 'Tom'], 
+            'relationships' => ['extraField1' => ['data' => ['id' => '123', 'type' => 'resource-models']]]];
         return [
             [
                 new ArrayDataProvider([
@@ -253,6 +259,7 @@ class SerializerTest extends TestCase
     public function testSerializeDataProvider($dataProvider, $expectedResult)
     {
         $serializer = new Serializer();
+        ResourceModel::$extraFields = ['extraField1'];
         ResourceModel::$fields = ['username'];
         $this->assertEquals($expectedResult, $serializer->serialize($dataProvider));
     }
