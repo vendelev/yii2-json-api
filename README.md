@@ -48,7 +48,9 @@ class Controller extends \yii\rest\Controller
     }
 }
 ```
-Model:
+Defining models:
+
+1) Let's define `User` model and declare an `articles` relation 
 ```php
 use tuyakhov\jsonapi\ResourceTrait;
 use tuyakhov\jsonapi\ResourceInterface;
@@ -56,6 +58,38 @@ use tuyakhov\jsonapi\ResourceInterface;
 class User extends ActiveRecord implements ResourceInterface
 {
     use ResourceTrait;
+    
+    public function getArticles()
+    {
+        return $this->hasMany(Article::className(), ['author_id' => 'id']);
+    }
+}
+```
+2) Now we need to define `Article` model
+```php
+use tuyakhov\jsonapi\ResourceTrait;
+use tuyakhov\jsonapi\ResourceInterface;
+
+class Article extends ActiveRecord implements ResourceInterface
+{
+    use ResourceTrait;
+}
+```
+3) As the result `User` model will be serialized into the proper json api resource object:
+```javascript
+{
+  "data": {
+    "type": "users",
+    "id": "1",
+    "attributes": {
+      // ... this user's attributes
+    },
+    "relationships": {
+      "articles": {
+        // ... this user's articles
+      }
+    }
+  }
 }
 ```
 Enabling JSON Input
