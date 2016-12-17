@@ -23,10 +23,6 @@ or add
 
 to the require section of your `composer.json` file.
 
-
-Usage
-==============================
-Once the extension is installed, simply use it in your code by  :
 Data Serializing and Content Negotiation:
 -------------------------------------------
 Controller:
@@ -49,7 +45,6 @@ class Controller extends \yii\rest\Controller
 }
 ```
 Defining models:
-
 1) Let's define `User` model and declare an `articles` relation 
 ```php
 use tuyakhov\jsonapi\ResourceTrait;
@@ -114,6 +109,51 @@ component in the application configuration like the following:
         ],
     ],
 ],
+```
+Links
+---------------------------
+Your resource classes may support HATEOAS by implementing the `LinksInterface`.
+The interface contains `getLinks()` method which should return a list of links.
+Typically, you should return at least the `self` link representing the URL to the resource object itself.
+In order to appear the links in relationships `getLinks()` method should return `self` link. 
+Based on this link each relationship will generate `self` and `related` links. 
+By default it happens by appending a relationship name at the end of the `self` link of the primary model, 
+you can simply change that behavior by overwriting `getRelationshipLinks()` method. 
+For example,
+```php
+class User extends ActiveRecord implements ResourceInterface, LinksInterface
+{
+    use ResourceTrait;
+    
+    public function getLinks()
+    {
+        return [
+            Link::REL_SELF => Url::to(['user/view', 'id' => $this->id], true),
+        ];
+    }
+}
+```
+As the result:
+```javascript
+{
+  "data": {
+    "type": "users",
+    "id": "1",
+    // ... this user's attributes
+    "relationships": {
+      "articles": {
+        // ... article's data
+        "links": {
+            "self": {"href": "http://yourdomain.com/users/1/relationships/articles"},
+            "related": {"href": "http://yourdomain.com/users/1/articles"}
+        }
+      }
+    }
+    "links": {
+        "self": {"href": "http://yourdomain.com/users/1"}
+    }
+  }
+}
 ```
 Enabling JSON Input
 ---------------------------

@@ -110,8 +110,15 @@ class Serializer extends Component
                 } elseif ($items instanceof ResourceIdentifierInterface) {
                     $relationship = ['id' => $items->getId(), 'type' => $items->getType()];
                 }
+
                 if (!empty($relationship)) {
                     $data['relationships'][$name]['data'] = $relationship;
+                    if ($model instanceof LinksInterface) {
+                        $links = $model->getRelationshipLinks($name);
+                        if (!empty($links)) {
+                            $data['relationships'][$name]['links'] = Link::serialize($links);
+                        }
+                    }
                 }
             }
         }

@@ -8,6 +8,8 @@ namespace tuyakhov\jsonapi;
 use yii\base\Arrayable;
 use yii\db\ActiveRecordInterface;
 use yii\helpers\Inflector;
+use yii\web\Link;
+use yii\web\Linkable;
 
 trait ResourceTrait
 {
@@ -83,6 +85,29 @@ trait ResourceTrait
                 $this->link($name, $value);
             }
         }
+    }
+
+    /**
+     * @param string $name the case sensitive name of the relationship.
+     * @return array
+     */
+    public function getRelationshipLinks($name)
+    {
+        if (!$this instanceof Linkable) {
+            return [];
+        }
+        $primaryLinks = $this->getLinks();
+        if (!array_key_exists(Link::REL_SELF, $primaryLinks)) {
+            return [];
+        }
+        $resourceLink = is_string($primaryLinks[Link::REL_SELF]) ? rtrim($primaryLinks[Link::REL_SELF], '/') : null;
+        if (!$resourceLink) {
+            return [];
+        }
+        return [
+            Link::REL_SELF => "{$resourceLink}/relationships/{$name}",
+            'related' => "{$resourceLink}/{$name}",
+        ];
     }
 
     /**

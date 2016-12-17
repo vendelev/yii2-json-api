@@ -47,6 +47,9 @@ class SerializerTest extends TestCase
                 'attributes' => [
                     'field1' => 'test',
                     'field2' => 2,
+                ],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123']
                 ]
             ]
         ], $serializer->serialize($model));
@@ -59,6 +62,9 @@ class SerializerTest extends TestCase
                 'type' => 'resource-models',
                 'attributes' => [
                     'field1' => 'test',
+                ],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123']
                 ]
             ]
         ], $serializer->serialize($model));
@@ -71,6 +77,9 @@ class SerializerTest extends TestCase
                 'type' => 'resource-models',
                 'attributes' => [
                     'field1' => 'test',
+                ],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123']
                 ]
             ]
         ], $serializer->serialize($model));
@@ -87,7 +96,16 @@ class SerializerTest extends TestCase
                 'field2' => 2,
             ],
             'relationships' => [
-                'extraField1' => ['data' => ['id' => '123', 'type' => 'resource-models']]
+                'extraField1' => [
+                    'data' => ['id' => '123', 'type' => 'resource-models'],
+                    'links' => [
+                        'self' => ['href' => 'http://example.com/resource/123/relationships/extraField1'],
+                        'related' => ['href' => 'http://example.com/resource/123/extraField1'],
+                    ]
+                ]
+            ],
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123']
             ]
         ];
         $model = new ResourceModel();
@@ -109,6 +127,9 @@ class SerializerTest extends TestCase
                         'field1' => 'test',
                         'field2' => 2,
                     ],
+                    'links' => [
+                        'self' => ['href' => 'http://example.com/resource/123']
+                    ]
                 ]
             ]
         ], $serializer->serialize($model));
@@ -124,6 +145,9 @@ class SerializerTest extends TestCase
                         'field1' => 'test',
                         'field2' => 2,
                     ],
+                    'links' => [
+                        'self' => ['href' => 'http://example.com/resource/123']
+                    ]
                 ]
             ]
         ], $serializer->serialize($model));
@@ -140,14 +164,29 @@ class SerializerTest extends TestCase
         $bob->username = 'Bob';
         $bob->extraField1 = new ResourceModel();
         $expectedBob = ['id' => '123', 'type' => 'resource-models', 
-            'attributes' => ['username' => 'Bob'], 
-            'relationships' => ['extraField1' => ['data' => ['id' => '123', 'type' => 'resource-models']]]];
+            'attributes' => ['username' => 'Bob'],
+            'links' => ['self' => ['href' => 'http://example.com/resource/123']],
+            'relationships' => ['extraField1' => [
+                'data' => ['id' => '123', 'type' => 'resource-models'],
+                'links' => [
+                    'related' => ['href' => 'http://example.com/resource/123/extraField1'],
+                    'self' => ['href' => 'http://example.com/resource/123/relationships/extraField1']
+                ]
+            ]]];
         $tom = new ResourceModel();
         $tom->username = 'Tom';
         $tom->extraField1 = new ResourceModel();
-        $expectedTom = ['id' => '123', 'type' => 'resource-models', 
-            'attributes' => ['username' => 'Tom'], 
-            'relationships' => ['extraField1' => ['data' => ['id' => '123', 'type' => 'resource-models']]]];
+        $expectedTom = [
+            'id' => '123', 'type' => 'resource-models',
+            'attributes' => ['username' => 'Tom'],
+            'links' => ['self' => ['href' => 'http://example.com/resource/123']],
+            'relationships' => ['extraField1' => [
+                'data' => ['id' => '123', 'type' => 'resource-models'],
+                'links' => [
+                    'related' => ['href' => 'http://example.com/resource/123/extraField1'],
+                    'self' => ['href' => 'http://example.com/resource/123/relationships/extraField1']
+                ]
+            ]]];
         return [
             [
                 new ArrayDataProvider([

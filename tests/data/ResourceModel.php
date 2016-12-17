@@ -5,12 +5,14 @@
 
 namespace tuyakhov\jsonapi\tests\data;
 
+use tuyakhov\jsonapi\LinksInterface;
 use tuyakhov\jsonapi\ResourceInterface;
 use tuyakhov\jsonapi\ResourceTrait;
 use yii\base\Model;
-use yii\db\ActiveQuery;
+use yii\helpers\Url;
+use yii\web\Link;
 
-class ResourceModel extends Model implements ResourceInterface
+class ResourceModel extends Model implements ResourceInterface, LinksInterface
 {
     use ResourceTrait;
 
@@ -48,5 +50,12 @@ class ResourceModel extends Model implements ResourceInterface
     public function setRelation($name, $value)
     {
         $this->_related[$name] = $value;
+    }
+
+    public function getLinks()
+    {
+        return [
+            Link::REL_SELF => Url::to('http://example.com/resource/' . $this->getId())
+        ];
     }
 }
