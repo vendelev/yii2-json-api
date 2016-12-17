@@ -1,8 +1,6 @@
 <?php
 /**
- * @link http://www.stombox.com/
- * @copyright Copyright (c) 2015 Stombox LLC
- * @license http://www.stombox.com/license/
+ * @author Anton Tuyakhov <atuyakhov@gmail.com>
  */
 
 namespace tuyakhov\jsonapi;
