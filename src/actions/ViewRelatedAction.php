@@ -37,13 +37,13 @@ class ViewRelatedAction extends Action
             throw new BadRequestHttpException('Impossible to fetch related resource');
         }
 
-        if ($this->checkAccess) {
-            call_user_func($this->checkAccess, $this->id, $model);
-        }
-
         /** @var ActiveQuery $related */
         if (!$related = $model->getRelation($name, false)) {
             throw new NotFoundHttpException('Resource does not exist');
+        }
+
+        if ($this->checkAccess) {
+            call_user_func($this->checkAccess, $this->id, $model, $name);
         }
 
         if ($this->prepareDataProvider !== null) {

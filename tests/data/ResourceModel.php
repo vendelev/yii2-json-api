@@ -52,6 +52,21 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
         $this->_related[$name] = $value;
     }
 
+    public static function find()
+    {
+        return new ActiveQuery(self::className());
+    }
+
+    public static function primaryKey()
+    {
+        return ['id'];
+    }
+
+    public function unlinkAll()
+    {
+        return;
+    }
+
     public function getLinks()
     {
         return [
