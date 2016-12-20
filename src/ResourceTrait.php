@@ -14,14 +14,11 @@ use yii\web\Linkable;
 trait ResourceTrait
 {
     /**
-     * @return null|string
+     * @return string
      */
     public function getId()
     {
-        if ($this instanceof ActiveRecordInterface) {
-            return (string) $this->getPrimaryKey();
-        }
-        return null;
+        return (string) ($this instanceof ActiveRecordInterface ? $this->getPrimaryKey() : null);
     }
 
     /**

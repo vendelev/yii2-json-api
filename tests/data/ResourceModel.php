@@ -29,7 +29,7 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
 
     public function getId()
     {
-        return static::$id;
+        return (string) static::$id;
     }
 
     public function fields()
