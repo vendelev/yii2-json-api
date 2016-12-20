@@ -6,6 +6,7 @@ namespace tuyakhov\jsonapi\tests;
 
 use tuyakhov\jsonapi\tests\data\ResourceModel;
 use tuyakhov\jsonapi\Serializer;
+use yii\base\InvalidValueException;
 use yii\data\ArrayDataProvider;
 
 class SerializerTest extends TestCase
@@ -17,6 +18,16 @@ class SerializerTest extends TestCase
         ResourceModel::$extraFields = [];
     }
 
+    // https://github.com/tuyakhov/yii2-json-api/pull/9
+    public function testSerializeIdentifier()
+    {
+        ResourceModel::$id = [];
+        $model = new ResourceModel();
+        $serializer = new Serializer();
+        $this->expectException(InvalidValueException::class);
+        $serializer->serialize($model);
+    }
+    
     public function testSerializeModelErrors()
     {
         $serializer = new Serializer();
@@ -39,6 +50,7 @@ class SerializerTest extends TestCase
     public function testSerializeModelData()
     {
         $serializer = new Serializer();
+        ResourceModel::$id = 123;
         $model = new ResourceModel();
         $this->assertSame([
             'data' => [

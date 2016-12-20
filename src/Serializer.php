@@ -6,6 +6,7 @@
 namespace tuyakhov\jsonapi;
 
 use yii\base\Component;
+use yii\base\InvalidValueException;
 use yii\base\Model;
 use yii\data\DataProviderInterface;
 use yii\data\Pagination;
@@ -86,16 +87,14 @@ class Serializer extends Component
      * @param ResourceInterface $model
      * @return array
      */
-    protected function serializeModel($model)
+    protected function serializeModel(ResourceInterface $model)
     {
         $fields = $this->getRequestedFields();
 
         $attributes = isset($fields[$model->getType()]) ? $fields[$model->getType()] : [];
-        $data = [
-            'id' => $model->getId(),
-            'type' => $model->getType(),
+        $data = array_merge($this->serializeIdentifier($model), [
             'attributes' => $model->getResourceAttributes($attributes),
-        ];
+        ]);
 
         $relationships = $model->getResourceRelationships();
         if (!empty($relationships)) {
@@ -104,11 +103,11 @@ class Serializer extends Component
                 if (is_array($items)) {
                     foreach ($items as $item) {
                         if ($item instanceof ResourceIdentifierInterface) {
-                            $relationship[] = ['id' => $item->getId(), 'type' => $item->getType()];
+                            $relationship[] = $this->serializeIdentifier($item);
                         }
                     }
                 } elseif ($items instanceof ResourceIdentifierInterface) {
-                    $relationship = ['id' => $items->getId(), 'type' => $items->getType()];
+                    $relationship = $this->serializeIdentifier($items);
                 }
 
                 if (!empty($relationship)) {
@@ -134,7 +133,7 @@ class Serializer extends Component
      * @param ResourceInterface $resource
      * @return array
      */
-    protected function serializeResource($resource)
+    protected function serializeResource(ResourceInterface $resource)
     {
         if ($this->request->getIsHead()) {
             return null;
@@ -148,6 +147,26 @@ class Serializer extends Component
 
             return $data;
         }
+    }
+
+    /**
+     * Serialize resource identifier object and make type juggling
+     * @link http://jsonapi.org/format/#document-resource-object-identification
+     * @param ResourceIdentifierInterface $identifier
+     * @return array
+     */
+    protected function serializeIdentifier(ResourceIdentifierInterface $identifier)
+    {
+        $result = [];
+        foreach (['id', 'type'] as $key) {
+            $getter = 'get' . ucfirst($key);
+            $value = $identifier->$getter();
+            if ($value === null || is_array($value) || (is_object($value) && !method_exists($value, '__toString'))) {
+                throw new InvalidValueException("The value {$key} of resource object " . get_class($identifier) . ' MUST be a string.');
+            }
+            $result[$key] = (string) $value;
+        }
+        return $result;
     }
 
     /**
