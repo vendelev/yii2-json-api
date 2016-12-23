@@ -96,6 +96,7 @@ class Serializer extends Component
             'attributes' => $model->getResourceAttributes($attributes),
         ]);
 
+        $included = $this->getIncluded();
         $relationships = $model->getResourceRelationships();
         if (!empty($relationships)) {
             foreach ($relationships as $name => $items) {
@@ -111,12 +112,14 @@ class Serializer extends Component
                 }
 
                 if (!empty($relationship)) {
-                    $data['relationships'][$name]['data'] = $relationship;
-                    if ($model instanceof LinksInterface) {
-                        $links = $model->getRelationshipLinks($name);
-                        if (!empty($links)) {
-                            $data['relationships'][$name]['links'] = Link::serialize($links);
-                        }
+                    if (in_array($name, $included)) {
+                        $data['relationships'][$name]['data'] = $relationship;   
+                    }
+                }
+                if ($model instanceof LinksInterface) {
+                    $links = $model->getRelationshipLinks($name);
+                    if (!empty($links)) {
+                        $data['relationships'][$name]['links'] = Link::serialize($links);
                     }
                 }
             }
