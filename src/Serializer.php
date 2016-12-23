@@ -119,11 +119,11 @@ class Serializer extends Component
                     if (in_array($name, $included)) {
                         $data['relationships'][$name]['data'] = $relationship;
                     }
-                }
-                if ($model instanceof LinksInterface) {
-                    $links = $model->getRelationshipLinks($name);
-                    if (!empty($links)) {
-                        $data['relationships'][$name]['links'] = Link::serialize($links);
+                    if ($model instanceof LinksInterface) {
+                        $links = $model->getRelationshipLinks($name);
+                        if (!empty($links)) {
+                            $data['relationships'][$name]['links'] = Link::serialize($links);
+                        }
                     }
                 }
             }
