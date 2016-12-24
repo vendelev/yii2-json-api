@@ -66,14 +66,14 @@ class SerializerTest extends TestCase
             ]
         ], $serializer->serialize($model));
 
-        ResourceModel::$fields = ['field1'];
+        ResourceModel::$fields = ['first_name'];
         ResourceModel::$extraFields = [];
         $this->assertSame([
             'data' => [
                 'id' => '123',
                 'type' => 'resource-models',
                 'attributes' => [
-                    'field1' => 'test',
+                    'first-name' => 'Bob',
                 ],
                 'links' => [
                     'self' => ['href' => 'http://example.com/resource/123']
@@ -289,6 +289,28 @@ class SerializerTest extends TestCase
         ResourceModel::$extraFields = ['extraField1'];
         ResourceModel::$fields = ['username'];
         $this->assertEquals($expectedResult, $serializer->serialize($dataProvider));
+    }
+
+    public function testFieldSets()
+    {
+        $serializer = new Serializer();
+        ResourceModel::$id = 123;
+        ResourceModel::$fields = ['field1', 'first_name', 'field2'];
+        $model = new ResourceModel();
+
+        \Yii::$app->request->setQueryParams(['fields' => ['resource-models' => 'first_name']]);
+        $this->assertSame([
+            'data' => [
+                'id' => '123',
+                'type' => 'resource-models',
+                'attributes' => [
+                    'first-name' => 'Bob',
+                ],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123']
+                ]
+            ]
+        ], $serializer->serialize($model));
     }
 
     public function testTypeInflection()

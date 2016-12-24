@@ -10,6 +10,7 @@ use yii\base\InvalidValueException;
 use yii\base\Model;
 use yii\data\DataProviderInterface;
 use yii\data\Pagination;
+use yii\helpers\Inflector;
 use yii\web\Link;
 use yii\web\Linkable;
 use yii\web\Request;
@@ -55,6 +56,15 @@ class Serializer extends Component
     public $pluralize = true;
 
     /**
+     * Prepares the member name that should be returned.
+     * If not set, all member names will be converted to recommended format.
+     * For example, both 'firstName' and 'first_name' will be converted to 'first-name'.
+     * @var callable
+     */
+    public $prepareMemberName;
+
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -94,10 +104,13 @@ class Serializer extends Component
     protected function serializeModel(ResourceInterface $model)
     {
         $fields = $this->getRequestedFields();
+        $fields = isset($fields[$model->getType()]) ? $fields[$model->getType()] : [];
 
-        $attributes = isset($fields[$model->getType()]) ? $fields[$model->getType()] : [];
+        $attributes = $model->getResourceAttributes($fields);
+        $attributes = array_combine($this->prepareMemberNames(array_keys($attributes)), array_values($attributes));
+
         $data = array_merge($this->serializeIdentifier($model), [
-            'attributes' => $model->getResourceAttributes($attributes),
+            'attributes' => $attributes,
         ]);
 
         $included = $this->getIncluded();
@@ -291,7 +304,7 @@ class Serializer extends Component
             $fields = [];
         }
         foreach ($fields as $key => $field) {
-            $fields[$key] = preg_split('/\s*,\s*/', $fields, -1, PREG_SPLIT_NO_EMPTY);
+            $fields[$key] = preg_split('/\s*,\s*/', $field, -1, PREG_SPLIT_NO_EMPTY);
         }
         return $fields;
     }
@@ -300,5 +313,20 @@ class Serializer extends Component
     {
         $include = $this->request->get($this->expandParam);
         return is_string($include) ? preg_split('/\s*,\s*/', $include, -1, PREG_SPLIT_NO_EMPTY) : [];
+    }
+
+
+    /**
+     * Format member names according to recommendations for JSON API implementations
+     * @link http://jsonapi.org/format/#document-member-names
+     * @param array $memberNames
+     * @return array
+     */
+    protected function prepareMemberNames(array $memberNames = [])
+    {
+        $callback = $this->prepareMemberName !== null ? $this->prepareMemberName : function($name) {
+            return Inflector::camel2id(Inflector::variablize($name));
+        };
+        return array_map($callback, $memberNames);
     }
 }

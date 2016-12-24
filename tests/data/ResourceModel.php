@@ -21,6 +21,7 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
     public static $extraFields = [];
     public $field1 = 'test';
     public $field2 = 2;
+    public $first_name = 'Bob';
     public $username = '';
     public $extraField1 = 'testExtra';
     public $extraField2 = 42;
