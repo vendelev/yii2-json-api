@@ -44,6 +44,17 @@ class Controller extends \yii\rest\Controller
     }
 }
 ```
+By default, the value of `type` is automatically pluralized. 
+You can change this behavior by setting `tuyakhov\jsonapi\Serializer::$pluralize` property:
+```
+class Controller extends \yii\rest\Controller
+{
+    public $serializer = [
+        'class' => 'tuyakhov\jsonapi\Serializer',
+        'pluralize' => false,  // makes {"type": "user"}, instead of {"type": "users"}
+    ];
+}
+```
 Defining models:
 1) Let's define `User` model and declare an `articles` relation 
 ```php

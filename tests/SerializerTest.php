@@ -290,4 +290,22 @@ class SerializerTest extends TestCase
         ResourceModel::$fields = ['username'];
         $this->assertEquals($expectedResult, $serializer->serialize($dataProvider));
     }
+
+    public function testTypeInflection()
+    {
+        $serializer = new Serializer();
+        $serializer->pluralize = false;
+        $model = new ResourceModel();
+        ResourceModel::$fields = [];
+        $this->assertSame([
+            'data' => [
+                'id' => '123',
+                'type' => 'resource-model',
+                'attributes' => [],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123']
+                ]
+            ]
+        ], $serializer->serialize($model));
+    }
 }
