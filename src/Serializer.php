@@ -14,6 +14,7 @@ use yii\web\Link;
 use yii\web\Linkable;
 use yii\web\Request;
 use yii\web\Response;
+use yii\helpers\Inflector;
 
 class Serializer extends Component
 {
@@ -48,7 +49,10 @@ class Serializer extends Component
      * @var Response the response to be sent. If not set, the `response` application component will be used.
      */
     public $response;
-
+    /**
+     * @var bool whether to automatically pluralize the `type` of resource.
+     */
+    public $pluralize = true;
 
     /**
      * @inheritdoc
@@ -113,7 +117,7 @@ class Serializer extends Component
 
                 if (!empty($relationship)) {
                     if (in_array($name, $included)) {
-                        $data['relationships'][$name]['data'] = $relationship;   
+                        $data['relationships'][$name]['data'] = $relationship;
                     }
                 }
                 if ($model instanceof LinksInterface) {
@@ -166,6 +170,9 @@ class Serializer extends Component
             $value = $identifier->$getter();
             if ($value === null || is_array($value) || (is_object($value) && !method_exists($value, '__toString'))) {
                 throw new InvalidValueException("The value {$key} of resource object " . get_class($identifier) . ' MUST be a string.');
+            }
+            if ($key === 'type' && $this->pluralize) {
+                $value = Inflector::pluralize($value);
             }
             $result[$key] = (string) $value;
         }
