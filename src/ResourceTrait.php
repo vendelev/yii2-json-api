@@ -7,7 +7,6 @@ namespace tuyakhov\jsonapi;
 
 use yii\base\Arrayable;
 use yii\db\ActiveRecordInterface;
-use yii\helpers\Inflector;
 use yii\web\Link;
 use yii\web\Linkable;
 
@@ -120,6 +119,7 @@ trait ResourceTrait
             if (is_int($field)) {
                 $field = $definition;
             }
+            $field = Inflector::camel2id(Inflector::variablize($field), '_');
             if (empty($fieldSet) || in_array($field, $fieldSet, true)) {
                 $result[$field] = $definition;
             }

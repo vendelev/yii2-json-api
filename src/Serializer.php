@@ -10,12 +10,10 @@ use yii\base\InvalidValueException;
 use yii\base\Model;
 use yii\data\DataProviderInterface;
 use yii\data\Pagination;
-use yii\helpers\Inflector;
 use yii\web\Link;
 use yii\web\Linkable;
 use yii\web\Request;
 use yii\web\Response;
-use yii\helpers\Inflector;
 
 class Serializer extends Component
 {
@@ -61,7 +59,13 @@ class Serializer extends Component
      * For example, both 'firstName' and 'first_name' will be converted to 'first-name'.
      * @var callable
      */
-    public $prepareMemberName;
+    public $prepareMemberName = ['tuyakhov\jsonapi\Inflector', 'var2member'];
+
+    /**
+     * Converts a member name to an attribute name.
+     * @var callable
+     */
+    public $formatMemberName = ['tuyakhov\jsonapi\Inflector', 'member2var'];
 
 
     /**
@@ -104,7 +108,8 @@ class Serializer extends Component
     protected function serializeModel(ResourceInterface $model)
     {
         $fields = $this->getRequestedFields();
-        $fields = isset($fields[$model->getType()]) ? $fields[$model->getType()] : [];
+        $type = $this->pluralize ? Inflector::pluralize($model->getType()) : $model->getType();
+        $fields = isset($fields[$type]) ? $fields[$type] : [];
 
         $attributes = $model->getResourceAttributes($fields);
         $attributes = array_combine($this->prepareMemberNames(array_keys($attributes)), array_values($attributes));
@@ -127,15 +132,16 @@ class Serializer extends Component
                 } elseif ($items instanceof ResourceIdentifierInterface) {
                     $relationship = $this->serializeIdentifier($items);
                 }
-
                 if (!empty($relationship)) {
+                    $memberName = $this->prepareMemberNames([$name]);
+                    $memberName = reset($memberName);
                     if (in_array($name, $included)) {
-                        $data['relationships'][$name]['data'] = $relationship;
+                        $data['relationships'][$memberName]['data'] = $relationship;
                     }
                     if ($model instanceof LinksInterface) {
-                        $links = $model->getRelationshipLinks($name);
+                        $links = $model->getRelationshipLinks($memberName);
                         if (!empty($links)) {
-                            $data['relationships'][$name]['links'] = Link::serialize($links);
+                            $data['relationships'][$memberName]['links'] = Link::serialize($links);
                         }
                     }
                 }
@@ -304,7 +310,7 @@ class Serializer extends Component
             $fields = [];
         }
         foreach ($fields as $key => $field) {
-            $fields[$key] = preg_split('/\s*,\s*/', $field, -1, PREG_SPLIT_NO_EMPTY);
+            $fields[$key] = array_map($this->formatMemberName, preg_split('/\s*,\s*/', $field, -1, PREG_SPLIT_NO_EMPTY));
         }
         return $fields;
     }
@@ -312,7 +318,7 @@ class Serializer extends Component
     protected function getIncluded()
     {
         $include = $this->request->get($this->expandParam);
-        return is_string($include) ? preg_split('/\s*,\s*/', $include, -1, PREG_SPLIT_NO_EMPTY) : [];
+        return is_string($include) ? array_map($this->formatMemberName, preg_split('/\s*,\s*/', $include, -1, PREG_SPLIT_NO_EMPTY)) : [];
     }
 
 
@@ -324,9 +330,6 @@ class Serializer extends Component
      */
     protected function prepareMemberNames(array $memberNames = [])
     {
-        $callback = $this->prepareMemberName !== null ? $this->prepareMemberName : function($name) {
-            return Inflector::camel2id(Inflector::variablize($name));
-        };
-        return array_map($callback, $memberNames);
+        return array_map($this->prepareMemberName, $memberNames);
     }
 }

@@ -5,9 +5,7 @@
 
 namespace tuyakhov\jsonapi;
 
-use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
-use yii\helpers\Inflector;
 use \yii\web\JsonParser;
 
 class JsonApiParser extends JsonParser
@@ -18,7 +16,7 @@ class JsonApiParser extends JsonParser
      * For example, 'articles' will be converted to 'Article'
      * @var callable
      */
-    public $formNameCallback;
+    public $formNameCallback = ['tuyakhov\jsonapi\Inflector', 'type2form'];
 
     /**
      * Converts member names to variable names
@@ -26,7 +24,7 @@ class JsonApiParser extends JsonParser
      * For example, 'first-name' will be converted to 'first_name'
      * @var callable
      */
-    public $memberNameCallback;
+    public $memberNameCallback = ['tuyakhov\jsonapi\Inflector', 'member2var'];
 
     /**
      * Parse resource object into the input data to populates the model
@@ -75,10 +73,7 @@ class JsonApiParser extends JsonParser
      */
     protected function typeToFormName($type)
     {
-        if ($this->formNameCallback !== null) {
-            return call_user_func($this->formNameCallback, $type);
-        }
-        return Inflector::id2camel(Inflector::singularize($type));
+        return call_user_func($this->formNameCallback, $type);
     }
 
     /**
@@ -87,9 +82,6 @@ class JsonApiParser extends JsonParser
      */
     protected function parseMemberNames(array $memberNames = [])
     {
-        $callback = $this->memberNameCallback !== null ? $this->memberNameCallback : function($name) {
-            return str_replace(' ', '_', preg_replace('/[^A-Za-z0-9]+/', ' ', $name));
-        };
-        return array_map($callback, $memberNames);
+        return array_map($this->memberNameCallback, $memberNames);
     }
 }
