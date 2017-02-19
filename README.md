@@ -46,7 +46,7 @@ class Controller extends \yii\rest\Controller
 ```
 By default, the value of `type` is automatically pluralized. 
 You can change this behavior by setting `tuyakhov\jsonapi\Serializer::$pluralize` property:
-```
+```php
 class Controller extends \yii\rest\Controller
 {
     public $serializer = [
@@ -166,7 +166,7 @@ As the result:
   }
 }
 ```
-Enabling JSON Input
+Enabling JSON API Input
 ---------------------------
 To let the API accept input data in JSON API format, configure the [[yii\web\Request::$parsers|parsers]] property of the request application component to use the [[tuyakhov\jsonapi\JsonApiParser]] for JSON input
 ```php
@@ -176,3 +176,35 @@ To let the API accept input data in JSON API format, configure the [[yii\web\Req
   ]
 ]
 ```
+By default it parses a HTTP request body so that you can populate model attributes with user inputs.
+For example the request body:
+```javascript
+{
+  "data": {
+    "type": "users",
+    "id": "1",
+    "attributes": {
+        "first-name": "Bob",
+        "last-name": "Homster"
+    }
+  }
+}
+```
+Will be resolved into the following array:
+```php
+// var_dump($_POST);
+[
+    "User" => [
+        "first_name" => "Bob", 
+        "last_name" => "Homster"
+    ]
+]
+```
+So you can access request body by calling `\Yii::$app->request->post()` and simply populate the model with input data:
+```php
+$model = new User();
+$model->load(\Yii::$app->request->post());
+```
+By default type `users` will be converted into `User` (singular, camelCase) which corresponds to the model's `formName()` method (which you may override).
+You can override the `JsonApiParser::formNameCallback` property which refers to a callback that converts 'type' member to form name.
+Also you could change the default behavior for conversion of member names to variable names ('first-name' converts into 'first_name') by setting `JsonApiParser::memberNameCallback` property.

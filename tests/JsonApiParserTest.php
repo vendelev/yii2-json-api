@@ -21,6 +21,7 @@ class JsonApiParserTest extends TestCase
                'attributes' => [
                    'field1' => 'test',
                    'field2' => 2,
+                   'first-name' => 'Bob'
                ],
                'relationships' => [
                    'author' => [
@@ -33,7 +34,8 @@ class JsonApiParserTest extends TestCase
         $this->assertEquals([
             'ResourceModel' => [
                 'field1' => 'test',
-                'field2' => 2
+                'field2' => 2,
+                'first_name' => 'Bob',
             ],
             'author' => [
                 'ResourceModel' => [

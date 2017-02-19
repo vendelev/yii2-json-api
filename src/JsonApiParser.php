@@ -5,30 +5,26 @@
 
 namespace tuyakhov\jsonapi;
 
-use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
-use yii\helpers\Inflector;
 use \yii\web\JsonParser;
 
 class JsonApiParser extends JsonParser
 {
     /**
-     * @var array|callable|null
+     * Converts 'type' member to form name
+     * If not set, type will be converted to singular form.
+     * For example, 'articles' will be converted to 'Article'
+     * @var callable
      */
-    protected $formNameCallback;
+    public $formNameCallback = ['tuyakhov\jsonapi\Inflector', 'type2form'];
 
-    public function __construct($formNameCallback = null)
-    {
-        if ($formNameCallback === null) {
-            $formNameCallback = [$this, 'typeToFormName'];
-        }
-        if (!is_callable($formNameCallback, true)) {
-            throw new InvalidConfigException('JsonApiParser::formNameCallback should be callable');
-        }
-
-        $this->formNameCallback = $formNameCallback;
-    }
-
+    /**
+     * Converts member names to variable names
+     * If not set, all special characters will be replaced by underscore
+     * For example, 'first-name' will be converted to 'first_name'
+     * @var callable
+     */
+    public $memberNameCallback = ['tuyakhov\jsonapi\Inflector', 'member2var'];
 
     /**
      * Parse resource object into the input data to populates the model
@@ -38,9 +34,9 @@ class JsonApiParser extends JsonParser
     {
         $array = parent::parse($rawBody, $contentType);
         if ($type = ArrayHelper::getValue($array, 'data.type')) {
-            $formName = call_user_func($this->formNameCallback, $type);
+            $formName = $this->typeToFormName($type);
             if ($attributes = ArrayHelper::getValue($array, 'data.attributes')) {
-                $result[$formName] = $attributes;
+                $result[$formName] = array_combine($this->parseMemberNames(array_keys($attributes)), array_values($attributes));
             } elseif ($id = ArrayHelper::getValue($array, 'data.id')) {
                 $result[$formName] = ['id' => $id, 'type' => $type];
             }
@@ -49,12 +45,12 @@ class JsonApiParser extends JsonParser
                     if (isset($relationship[0])) {
                         foreach ($relationship as $item) {
                             if (isset($item['type']) && isset($item['id'])) {
-                                $formName = call_user_func($this->formNameCallback, $item['type']);
+                                $formName = $this->typeToFormName($item['type']);
                                 $result[$name][$formName][] = $item;
                             }
                         }
                     } elseif (isset($relationship['type']) && isset($relationship['id'])) {
-                        $formName = call_user_func($this->formNameCallback, $relationship['type']);
+                        $formName = $this->typeToFormName($relationship['type']);
                         $result[$name][$formName] = $relationship;
                     }
                 }
@@ -63,7 +59,7 @@ class JsonApiParser extends JsonParser
             $data = ArrayHelper::getValue($array, 'data', []);
             foreach ($data as $relationLink) {
                 if (isset($relationLink['type']) && isset($relationLink['id'])) {
-                    $formName = call_user_func($this->formNameCallback, $relationLink['type']);
+                    $formName = $this->typeToFormName($relationLink['type']);
                     $result[$formName][] = $relationLink;
                 }
             }
@@ -71,8 +67,21 @@ class JsonApiParser extends JsonParser
         return isset($result) ? $result : $array;
     }
 
+    /**
+     * @param $type 'type' member of the document
+     * @return string form name
+     */
     protected function typeToFormName($type)
     {
-        return Inflector::id2camel(Inflector::singularize($type));
+        return call_user_func($this->formNameCallback, $type);
+    }
+
+    /**
+     * @param array $memberNames
+     * @return array variable names
+     */
+    protected function parseMemberNames(array $memberNames = [])
+    {
+        return array_map($this->memberNameCallback, $memberNames);
     }
 }

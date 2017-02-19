@@ -14,7 +14,6 @@ use yii\web\Link;
 use yii\web\Linkable;
 use yii\web\Request;
 use yii\web\Response;
-use yii\helpers\Inflector;
 
 class Serializer extends Component
 {
@@ -53,6 +52,21 @@ class Serializer extends Component
      * @var bool whether to automatically pluralize the `type` of resource.
      */
     public $pluralize = true;
+
+    /**
+     * Prepares the member name that should be returned.
+     * If not set, all member names will be converted to recommended format.
+     * For example, both 'firstName' and 'first_name' will be converted to 'first-name'.
+     * @var callable
+     */
+    public $prepareMemberName = ['tuyakhov\jsonapi\Inflector', 'var2member'];
+
+    /**
+     * Converts a member name to an attribute name.
+     * @var callable
+     */
+    public $formatMemberName = ['tuyakhov\jsonapi\Inflector', 'member2var'];
+
 
     /**
      * @inheritdoc
@@ -94,10 +108,14 @@ class Serializer extends Component
     protected function serializeModel(ResourceInterface $model)
     {
         $fields = $this->getRequestedFields();
+        $type = $this->pluralize ? Inflector::pluralize($model->getType()) : $model->getType();
+        $fields = isset($fields[$type]) ? $fields[$type] : [];
 
-        $attributes = isset($fields[$model->getType()]) ? $fields[$model->getType()] : [];
+        $attributes = $model->getResourceAttributes($fields);
+        $attributes = array_combine($this->prepareMemberNames(array_keys($attributes)), array_values($attributes));
+
         $data = array_merge($this->serializeIdentifier($model), [
-            'attributes' => $model->getResourceAttributes($attributes),
+            'attributes' => $attributes,
         ]);
 
         $included = $this->getIncluded();
@@ -114,16 +132,17 @@ class Serializer extends Component
                 } elseif ($items instanceof ResourceIdentifierInterface) {
                     $relationship = $this->serializeIdentifier($items);
                 }
-
                 if (!empty($relationship)) {
+                    $memberName = $this->prepareMemberNames([$name]);
+                    $memberName = reset($memberName);
                     if (in_array($name, $included)) {
-                        $data['relationships'][$name]['data'] = $relationship;
+                        $data['relationships'][$memberName]['data'] = $relationship;
                     }
-                }
-                if ($model instanceof LinksInterface) {
-                    $links = $model->getRelationshipLinks($name);
-                    if (!empty($links)) {
-                        $data['relationships'][$name]['links'] = Link::serialize($links);
+                    if ($model instanceof LinksInterface) {
+                        $links = $model->getRelationshipLinks($memberName);
+                        if (!empty($links)) {
+                            $data['relationships'][$memberName]['links'] = Link::serialize($links);
+                        }
                     }
                 }
             }
@@ -291,7 +310,7 @@ class Serializer extends Component
             $fields = [];
         }
         foreach ($fields as $key => $field) {
-            $fields[$key] = preg_split('/\s*,\s*/', $fields, -1, PREG_SPLIT_NO_EMPTY);
+            $fields[$key] = array_map($this->formatMemberName, preg_split('/\s*,\s*/', $field, -1, PREG_SPLIT_NO_EMPTY));
         }
         return $fields;
     }
@@ -299,6 +318,18 @@ class Serializer extends Component
     protected function getIncluded()
     {
         $include = $this->request->get($this->expandParam);
-        return is_string($include) ? preg_split('/\s*,\s*/', $include, -1, PREG_SPLIT_NO_EMPTY) : [];
+        return is_string($include) ? array_map($this->formatMemberName, preg_split('/\s*,\s*/', $include, -1, PREG_SPLIT_NO_EMPTY)) : [];
+    }
+
+
+    /**
+     * Format member names according to recommendations for JSON API implementations
+     * @link http://jsonapi.org/format/#document-member-names
+     * @param array $memberNames
+     * @return array
+     */
+    protected function prepareMemberNames(array $memberNames = [])
+    {
+        return array_map($this->prepareMemberName, $memberNames);
     }
 }
