@@ -21,14 +21,16 @@ class ViewRelatedActionTest extends TestCase
         $action = new ViewRelatedAction('test', new Controller('test', \Yii::$app), [
             'modelClass' => ResourceModel::className()
         ]);
-        $model->setRelation('multiple', new ActiveQuery(ResourceModel::className(), ['multiple' => true]));
-        $model->setRelation('single', new ActiveQuery(ResourceModel::className()));
+        ResourceModel::$related = [
+            'extraField1' => new ActiveQuery(ResourceModel::className(), ['multiple' => true]),
+            'extraField2' => new ActiveQuery(ResourceModel::className())
+        ];
         $action->findModel = function ($id, $action) use($model) {
             return $model;
         };
 
-        $this->assertInstanceOf(ActiveDataProvider::className(), $action->run(1, 'multiple'));
-        $this->assertInstanceOf(ResourceModel::className(), $action->run(1, 'single'));
+        $this->assertInstanceOf(ActiveDataProvider::className(), $action->run(1, 'extraField1'));
+        $this->assertInstanceOf(ResourceModel::className(), $action->run(1, 'extraField2'));
     }
 
     public function testInvalidRelation()
