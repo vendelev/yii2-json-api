@@ -23,6 +23,4 @@ class ActiveQuery extends \yii\db\ActiveQuery
     {
         return count(self::$models);
     }
-
-
 }

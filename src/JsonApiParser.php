@@ -6,6 +6,7 @@
 namespace tuyakhov\jsonapi;
 
 use yii\helpers\ArrayHelper;
+use yii\web\BadRequestHttpException;
 use \yii\web\JsonParser;
 
 class JsonApiParser extends JsonParser
@@ -33,37 +34,27 @@ class JsonApiParser extends JsonParser
     public function parse($rawBody, $contentType)
     {
         $array = parent::parse($rawBody, $contentType);
-        if ($type = ArrayHelper::getValue($array, 'data.type')) {
-            $formName = $this->typeToFormName($type);
-            if ($attributes = ArrayHelper::getValue($array, 'data.attributes')) {
-                $result[$formName] = array_combine($this->parseMemberNames(array_keys($attributes)), array_values($attributes));
-            } elseif ($id = ArrayHelper::getValue($array, 'data.id')) {
-                $result[$formName] = ['id' => $id, 'type' => $type];
+        $data =  ArrayHelper::getValue($array, 'data', []);
+        if (empty($data)) {
+            if ($this->throwException) {
+                throw new BadRequestHttpException('The request MUST include a single resource object as primary data.');
             }
-            if ($relationships = ArrayHelper::getValue($array, 'data.relationships')) {
-                foreach ($relationships as $name => $relationship) {
-                    if (isset($relationship[0])) {
-                        foreach ($relationship as $item) {
-                            if (isset($item['type']) && isset($item['id'])) {
-                                $formName = $this->typeToFormName($item['type']);
-                                $result[$name][$formName][] = $item;
-                            }
-                        }
-                    } elseif (isset($relationship['type']) && isset($relationship['id'])) {
-                        $formName = $this->typeToFormName($relationship['type']);
-                        $result[$name][$formName] = $relationship;
-                    }
-                }
-            }
+            return [];
+        }
+        if (ArrayHelper::isAssociative($data)) {
+            $result = $this->parseResource($data);
+
+            $relObjects = ArrayHelper::getValue($data, 'relationships', []);
+            $result['relationships'] = $this->parseRelationships($relObjects);
         } else {
-            $data = ArrayHelper::getValue($array, 'data', []);
-            foreach ($data as $relationLink) {
-                if (isset($relationLink['type']) && isset($relationLink['id'])) {
-                    $formName = $this->typeToFormName($relationLink['type']);
-                    $result[$formName][] = $relationLink;
+            foreach ($data as $object) {
+                $resource = $this->parseResource($object);
+                foreach (array_keys($resource) as $key) {
+                    $result[$key][] = $resource[$key];
                 }
             }
         }
+
         return isset($result) ? $result : $array;
     }
 
@@ -83,5 +74,54 @@ class JsonApiParser extends JsonParser
     protected function parseMemberNames(array $memberNames = [])
     {
         return array_map($this->memberNameCallback, $memberNames);
+    }
+
+    /**
+     * @param $item
+     * @return array
+     * @throws BadRequestHttpException
+     */
+    protected function parseResource($item)
+    {
+        if (!$type = ArrayHelper::getValue($item, 'type')) {
+            if ($this->throwException) {
+                throw new BadRequestHttpException('The resource object MUST contain at least a type member');
+            }
+            return [];
+        }
+        $formName = $this->typeToFormName($type);
+
+        $attributes = ArrayHelper::getValue($item, 'attributes', []);
+        $attributes = array_combine($this->parseMemberNames(array_keys($attributes)), array_values($attributes));
+
+        if ($id = ArrayHelper::getValue($item, 'id')) {
+            $attributes['id'] = $id;
+        }
+
+        return [$formName => $attributes];
+    }
+
+    /**
+     * @param array $relObjects
+     * @return array
+     */
+    protected function parseRelationships(array $relObjects = [])
+    {
+        $relationships = [];
+        foreach ($relObjects as $name => $relationship) {
+            if (!$relData = ArrayHelper::getValue($relationship, 'data')) {
+                continue;
+            }
+            if (!ArrayHelper::isIndexed($relData)) {
+                $relData = [$relData];
+            }
+            foreach ($relData as $identifier) {
+                if (isset($identifier['type']) && isset($identifier['id'])) {
+                    $formName = $this->typeToFormName($identifier['type']);
+                    $relationships[$name][$formName][] = ['id' => $identifier['id']];
+                }
+            }
+        }
+        return $relationships;
     }
 }

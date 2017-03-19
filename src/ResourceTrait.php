@@ -69,10 +69,14 @@ trait ResourceTrait
 
     /**
      * @param string $name the case sensitive name of the relationship.
-     * @param $relationship
+     * @param array|ActiveRecordInterface $relationship
      */
     public function setResourceRelationship($name, $relationship)
     {
+        /** @var $this ActiveRecordInterface */
+        if (!$this instanceof ActiveRecordInterface) {
+            return;
+        }
         if (!is_array($relationship)) {
             $relationship = [$relationship];
         }

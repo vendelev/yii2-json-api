@@ -7,10 +7,8 @@ namespace tuyakhov\jsonapi\actions;
 
 
 use tuyakhov\jsonapi\ResourceInterface;
-use yii\base\Arrayable;
 use yii\data\ActiveDataProvider;
 use yii\db\ActiveQuery;
-use yii\rest\Action;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 

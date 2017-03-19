@@ -11,12 +11,11 @@ use yii\helpers\Json;
 
 class JsonApiParserTest extends TestCase
 {
-    public function testParse()
+    public function testSingleResource()
     {
         $parser = new JsonApiParser();
         $body = Json::encode([
            'data' => [
-               'id' => '123',
                'type' => 'resource-models',
                'attributes' => [
                    'field1' => 'test',
@@ -25,8 +24,16 @@ class JsonApiParserTest extends TestCase
                ],
                'relationships' => [
                    'author' => [
-                       'id' => '123',
-                       'type' => 'resource-models'
+                       'data' => [
+                           'id' => '321',
+                           'type' => 'resource-models'
+                       ]
+                   ],
+                   'client' => [
+                       'data' => [
+                           ['id' => '321', 'type' => 'resource-models'],
+                           ['id' => '123', 'type' => 'resource-models']
+                       ]
                    ]
                ]
            ]
@@ -37,12 +44,51 @@ class JsonApiParserTest extends TestCase
                 'field2' => 2,
                 'first_name' => 'Bob',
             ],
-            'author' => [
-                'ResourceModel' => [
-                    'id' => '123',
-                    'type' => 'resource-models'
+            'relationships' => [
+                'author' => [
+                    'ResourceModel' => [
+                        ['id' => '321']
+                    ]
+                ],
+                'client' => [
+                    'ResourceModel' => [
+                        ['id' => '321'],
+                        ['id' => '123']
+                    ]
                 ]
             ]
+        ], $parser->parse($body, ''));
+    }
+
+    public function testMultiple()
+    {
+        $parser = new JsonApiParser();
+        $resourceActual = [
+            'type' => 'resource-models',
+            'id' => 12,
+            'attributes' => [
+                'field1' => 'test',
+                'field2' => 2,
+                'first-name' => 'Bob'
+            ],
+        ];
+        $resourceExpected = [
+            'id' => 12,
+            'field1' => 'test',
+            'field2' => 2,
+            'first_name' => 'Bob',
+        ];
+        $body = Json::encode([
+            'data' => [
+                $resourceActual,
+                $resourceActual
+            ]
+        ]);
+        $this->assertEquals([
+            'ResourceModel' => [
+                $resourceExpected,
+                $resourceExpected
+            ],
         ], $parser->parse($body, ''));
     }
 }

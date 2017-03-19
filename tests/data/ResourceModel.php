@@ -19,14 +19,13 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
     public static $id = '123';
     public static $fields = ['field1', 'field2'];
     public static $extraFields = [];
+    public static $related = [];
     public $field1 = 'test';
     public $field2 = 2;
     public $first_name = 'Bob';
     public $username = '';
     public $extraField1 = 'testExtra';
     public $extraField2 = 42;
-
-    private $_related = [];
 
     public function getId()
     {
@@ -45,12 +44,12 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
 
     public function getRelation($name)
     {
-        return isset($this->_related[$name]) ? $this->_related[$name] : null;
+        return isset(static::$related[$name]) ? static::$related[$name] : null;
     }
 
-    public function setRelation($name, $value)
+    public function setResourceRelationship($name, $relationship)
     {
-        $this->_related[$name] = $value;
+        $this->$name = $relationship;
     }
 
     public static function find()
@@ -58,14 +57,29 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
         return new ActiveQuery(self::className());
     }
 
+    public static function findOne()
+    {
+        return self::find()->one();
+    }
+
     public static function primaryKey()
     {
         return ['id'];
     }
 
+    public function getPrimaryKey($asArray = false)
+    {
+        return $asArray ? [$this->getId()] : $this->getId();
+    }
+
     public function unlinkAll()
     {
         return;
+    }
+
+    public function save()
+    {
+        return true;
     }
 
     public function getLinks()
