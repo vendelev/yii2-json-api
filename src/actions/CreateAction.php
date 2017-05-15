@@ -47,7 +47,7 @@ class CreateAction extends Action
         $request = Yii::$app->getRequest();
         $model->load($request->getBodyParams());
         if ($model->save()) {
-            $this->linkRelationships($model, $request->getBodyParam('relationships'));
+            $this->linkRelationships($model, $request->getBodyParam('relationships', []));
             $response = Yii::$app->getResponse();
             $response->setStatusCode(201);
             $id = implode(',', array_values($model->getPrimaryKey(true)));
