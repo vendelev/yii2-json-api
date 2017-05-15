@@ -39,7 +39,7 @@ class UpdateAction extends Action
             throw new ServerErrorHttpException('Failed to update the object for unknown reason.');
         }
 
-        $this->linkRelationships($model, $request->getBodyParam('relationships'));
+        $this->linkRelationships($model, $request->getBodyParam('relationships', []));
 
         return $model;
     }
