@@ -199,28 +199,37 @@ class Serializer extends Component
     }
 
     /**
-     * @param ResourceInterface $resource
+     * @param ResourceInterface|array $resources
      * @return array
      */
-    protected function serializeIncluded($resource)
+    protected function serializeIncluded($resources)
     {
         $included = $this->getIncluded();
-        $relationships = $resource->getResourceRelationships();
+        $resources = is_array($resources) ? $resources : [$resources];
         $data = [];
-        foreach ($relationships as $name => $relationship) {
-            if (!in_array($name, $included)) {
+
+        foreach ($resources as $resource) {
+            if (!$resource instanceof  ResourceInterface) {
                 continue;
             }
-            if (!is_array($relationship)) {
-                $relationship = [$relationship];
-            }
-            foreach ($relationship as $model) {
-                if ($model instanceof ResourceInterface) {
-                    $data[] = $this->serializeModel($model);
+            $relationships = $resource->getResourceRelationships();
+            foreach ($relationships as $name => $relationship) {
+                if (!in_array($name, $included)) {
+                    continue;
+                }
+                if (!is_array($relationship)) {
+                    $relationship = [$relationship];
+                }
+                foreach ($relationship as $model) {
+                    if ($model instanceof ResourceInterface) {
+                        $uniqueKey = $model->getType() . '/' . $model->getId();
+                        $data[$uniqueKey] = $this->serializeModel($model);
+                    }
                 }
             }
         }
-        return $data;
+
+        return array_values($data);
     }
 
     /**
@@ -234,23 +243,18 @@ class Serializer extends Component
             return null;
         } else {
             $models = [];
-            $includedModels = [];
 
             foreach ($dataProvider->getModels() as $model) {
                 if ($model instanceof ResourceInterface) {
                     $models[] = $this->serializeModel($model);
-
-                    $included = $this->serializeIncluded($model);
-                    foreach ($included as $document) {
-                        $includedModels[] = $document;
-                    }
                 }
             }
 
             $result = ['data' => $models];
 
-            if (!empty($includedModels)) {
-                $result['included'] = $includedModels;
+            $included = $this->serializeIncluded($models);
+            if (!empty($included)) {
+                $result['included'] = $included;
             }
 
             if (($pagination = $dataProvider->getPagination()) !== false) {
