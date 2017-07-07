@@ -140,6 +140,53 @@ class SerializerTest extends TestCase
         ], $serializer->serialize($model));
     }
 
+    public function testIncludedDuplicates()
+    {
+        $serializer = new Serializer();
+
+        $compoundModel = $includedModel = [
+            'id' => '123',
+            'type' => 'resource-models',
+            'attributes' => [
+                'field1' => 'test',
+                'field2' => 2,
+            ],
+        ];
+        $compoundModel['relationships'] = [
+            'extra-field1' => [
+                'data' => ['id' => '123', 'type' => 'resource-models'],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                    'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+                ]
+            ],
+            'extra-field2' => [
+                'data' => ['id' => '123', 'type' => 'resource-models'],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field2'],
+                    'related' => ['href' => 'http://example.com/resource/123/extra-field2'],
+                ]
+            ]
+        ];
+        $compoundModel['links'] = $includedModel['links'] = [
+            'self' => ['href' => 'http://example.com/resource/123']
+        ];
+
+        $model = new ResourceModel();
+        ResourceModel::$fields = ['field1', 'field2'];
+        ResourceModel::$extraFields = ['extraField1', 'extraField2'];
+        $model->extraField1 = new ResourceModel();
+        $model->extraField2 = new ResourceModel();
+
+        \Yii::$app->request->setQueryParams(['include' => 'extra-field1,extra-field2']);
+        $this->assertSame([
+            'data' => $compoundModel,
+            'included' => [
+                $includedModel
+            ]
+        ], $serializer->serialize($model));
+    }
+
     public function dataProviderSerializeDataProvider()
     {
         $bob = new ResourceModel();
@@ -266,7 +313,7 @@ class SerializerTest extends TestCase
                         $expectedTom
                     ]
                 ]
-            ]
+            ],
         ];
     }
     /**
