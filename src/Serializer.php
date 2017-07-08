@@ -242,15 +242,16 @@ class Serializer extends Component
         if ($this->request->getIsHead()) {
             return null;
         } else {
-            $models = [];
+            $models = $dataProvider->getModels();
+            $data = [];
 
-            foreach ($dataProvider->getModels() as $model) {
+            foreach ($models as $model) {
                 if ($model instanceof ResourceInterface) {
-                    $models[] = $this->serializeModel($model);
+                    $data[] = $this->serializeModel($model);
                 }
             }
 
-            $result = ['data' => $models];
+            $result = ['data' => $data];
 
             $included = $this->serializeIncluded($models);
             if (!empty($included)) {

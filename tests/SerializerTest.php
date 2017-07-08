@@ -185,6 +185,26 @@ class SerializerTest extends TestCase
                 $includedModel
             ]
         ], $serializer->serialize($model));
+        $this->assertSame([
+            'data' => [$compoundModel],
+            'included' => [
+                $includedModel
+            ],
+            'links' => [
+                'self' => ['href' => '/index.php?r=&include=extra-field1%2Cextra-field2&page=1']
+            ],
+            'meta' => [
+                'total-count' => 1,
+                'page-count' => 1,
+                'current-page' => 1,
+                'per-page' => 20
+            ]
+        ], $serializer->serialize(new ArrayDataProvider([
+            'allModels' => [$model],
+            'pagination' => [
+                'route' => '/',
+            ],
+        ])));
     }
 
     public function dataProviderSerializeDataProvider()
